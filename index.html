@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brain Tester - Ultimate Brain Teaser</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: '#131b2e',
+                        cardHover: '#1c2844',
+                        accentCyan: '#06b6d4',
+                        accentPurple: '#8b5cf6',
+                        accentEmerald: '#10b981',
+                        accentAmber: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Confetti JS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+            width: 100vw;
+            margin: 0;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(19, 27, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .animate-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-cyan-500 selection:text-black">
+
+    <!-- Background Ambient Glows -->
+    <div class="absolute top-0 left-1/4 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none animate-glow"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl pointer-events-none animate-glow" style="animation-delay: 1.5s;"></div>
+
+    <!-- Header -->
+    <header class="w-full max-w-3xl mx-auto px-3 sm:px-4 py-4 flex items-center justify-between z-10">
+        <div class="flex items-center space-x-2.5 cursor-pointer" onclick="openMenu()">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg glow-cyan">
+                <i class="fa-solid fa-brain text-white text-base"></i>
+            </div>
+            <div>
+                <h1 class="text-base sm:text-xl font-bold tracking-wider bg-gradient-to-r from-cyan-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">BRAIN TESTER</h1>
+                <p class="text-[10px] sm:text-xs text-slate-400 tracking-wide font-medium">100 Brain Teasers</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleSound()" id="soundBtn" class="w-9 h-9 rounded-xl glass-panel flex items-center justify-center text-slate-300 hover:text-cyan-400 transition" title="Toggle Sound">
+                <i class="fa-solid fa-volume-high text-xs" id="soundIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-xl mx-auto px-3 flex-1 flex flex-col justify-center items-center my-3 z-10">
+        
+        <!-- MENU VIEW (Active on Startup) -->
+        <div id="menuView" class="w-full flex flex-col items-center">
+            <div class="text-center mb-5">
+                <h2 class="text-2xl sm:text-3xl font-extrabold mb-1.5 tracking-tight">Select Category</h2>
+                <p class="text-slate-400 text-xs sm:text-sm max-w-xs sm:max-w-md mx-auto px-2">Pick a topic below to jump straight into the challenge.</p>
+                <div class="mt-3 flex items-center justify-center space-x-5 text-xs text-slate-400">
+                    <span class="flex items-center space-x-1.5"><i class="fa-solid fa-trophy text-amber-400"></i> <strong id="completedCount" class="text-slate-200">0</strong>/100 Solved</span>
+                    <span class="flex items-center space-x-1.5"><i class="fa-solid fa-star text-purple-400"></i> <strong id="totalStars" class="text-slate-200">0</strong> Stars</span>
+                </div>
+            </div>
+
+            <!-- Category Quick Jump Buttons -->
+            <div id="categoryGrid" class="w-full grid grid-cols-2 sm:grid-cols-5 gap-1.5 mb-4">
+                <button onclick="jumpToCategory(0)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-rose-400 hover:bg-rose-500/20 hover:border-rose-500 transition">1-10: Mastermind</button>
+                <button onclick="jumpToCategory(1)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-purple-400 hover:bg-purple-500/20 hover:border-purple-500 transition">11-20: Lights Out</button>
+                <button onclick="jumpToCategory(2)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 transition">21-30: Math Scales</button>
+                <button onclick="jumpToCategory(3)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-amber-400 hover:bg-amber-500/20 hover:border-amber-500 transition">31-40: Number Jump</button>
+                <button onclick="jumpToCategory(4)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-pink-400 hover:bg-pink-500/20 hover:border-pink-500 transition">41-50: Word Logic</button>
+                <button onclick="jumpToCategory(5)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-blue-400 hover:bg-blue-500/20 hover:border-blue-500 transition">51-60: Color Match</button>
+                <button onclick="jumpToCategory(6)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-indigo-400 hover:bg-indigo-500/20 hover:border-indigo-500 transition">61-70: Pipe Connect</button>
+                <button onclick="jumpToCategory(7)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-teal-400 hover:bg-teal-500/20 hover:border-teal-500 transition">71-80: Memory Grid</button>
+                <button onclick="jumpToCategory(8)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-orange-400 hover:bg-orange-500/20 hover:border-orange-500 transition">81-90: Tile Slider</button>
+                <button onclick="jumpToCategory(9)" class="px-2 py-2 rounded-lg glass-panel text-[11px] font-semibold text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500 transition">91-100: Sequences</button>
+            </div>
+
+            <!-- Level Grid -->
+            <div class="w-full glass-panel rounded-2xl p-3 sm:p-5 max-h-[42vh] overflow-y-auto">
+                <div id="levelGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div class="mt-4 flex space-x-3 w-full max-w-xs justify-center">
+                <button onclick="resumeGame()" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-black text-xs sm:text-sm hover:opacity-90 transition shadow-lg glow-cyan flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Continue Last Saved</span>
+                </button>
+                <button onclick="resetProgress()" class="py-2.5 px-3 rounded-xl glass-panel font-semibold text-slate-400 hover:text-rose-400 transition text-xs">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- GAME VIEW (Hidden until level is clicked) -->
+        <div id="gameView" class="w-full flex flex-col items-center hidden">
+            <!-- Level Top Bar -->
+            <div class="w-full flex items-center justify-between mb-3 px-1">
+                <div class="flex items-center space-x-1.5 sm:space-x-2">
+                    <button onclick="openMenu()" class="px-2.5 py-1.5 rounded-xl glass-panel flex items-center space-x-1 text-slate-300 hover:text-white transition text-xs font-semibold">
+                        <i class="fa-solid fa-arrow-left text-xs"></i>
+                        <span>Back</span>
+                    </button>
+                    <button onclick="toggleCategoryModal()" class="px-2.5 py-1.5 rounded-xl glass-panel flex items-center space-x-1 text-cyan-400 hover:bg-cyan-500/10 transition text-xs font-semibold border border-cyan-500/30">
+                        <i class="fa-solid fa-layer-group text-xs"></i>
+                        <span>Categories</span>
+                    </button>
+                    <div class="hidden sm:block">
+                        <span id="levelCategoryTag" class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Category</span>
+                        <h3 id="levelTitleDisplay" class="text-sm sm:text-base font-bold text-white mt-0.5">Level 1</h3>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5">
+                    <button onclick="showHint()" class="px-2.5 py-1.5 rounded-lg glass-panel text-[11px] font-semibold text-amber-400 hover:bg-amber-500/10 transition flex items-center space-x-1">
+                        <i class="fa-solid fa-lightbulb text-[10px]"></i>
+                        <span>Hint</span>
+                    </button>
+                    <button onclick="skipLevel()" class="px-2.5 py-1.5 rounded-lg glass-panel text-[11px] font-semibold text-purple-400 hover:bg-purple-500/10 transition flex items-center space-x-1" title="Skip level">
+                        <i class="fa-solid fa-forward-step text-[10px]"></i>
+                        <span>Skip</span>
+                    </button>
+                    <button onclick="restartCurrentLevel()" class="w-8 h-8 rounded-lg glass-panel flex items-center justify-center text-slate-300 hover:text-cyan-400 transition" title="Restart">
+                        <i class="fa-solid fa-rotate text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Puzzle Arena Card -->
+            <div id="puzzleArena" class="w-full glass-panel rounded-2xl p-4 sm:p-6 flex flex-col items-center relative min-h-[380px] justify-between shadow-xl">
+                <!-- Dynamically injected puzzle content -->
+            </div>
+
+            <!-- Bottom Navigation in Game -->
+            <div class="w-full flex justify-between items-center mt-3 px-1">
+                <button onclick="prevLevel()" id="prevBtn" class="px-3 py-1.5 rounded-lg glass-panel text-xs font-semibold text-slate-300 hover:text-white transition flex items-center space-x-1.5 disabled:opacity-30 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                    <span>Prev</span>
+                </button>
+                <div id="puzzleStatus" class="text-[11px] font-medium text-slate-400 text-center px-2 truncate max-w-[200px]">
+                    Solve the puzzle to proceed
+                </div>
+                <button onclick="nextLevel()" id="nextBtn" class="px-3 py-1.5 rounded-lg glass-panel text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition flex items-center space-x-1.5 disabled:opacity-30 disabled:cursor-not-allowed">
+                    <span>Next</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-3xl mx-auto px-3 py-3 text-center text-[10px] text-slate-500 z-10">
+        Brain Tester • Mobile Optimized
+    </footer>
+
+    <!-- Category Selector Modal -->
+    <div id="categoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-3">
+        <div class="glass-panel p-5 rounded-3xl max-w-md w-full border border-cyan-500/30">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-layer-group text-cyan-400"></i>
+                    <span>Jump to Category</span>
+                </h3>
+                <button onclick="toggleCategoryModal()" class="w-7 h-7 rounded-lg glass-panel text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto pr-1">
+                <button onclick="jumpToCategory(0); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-rose-500/20 border-rose-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-400 font-bold text-xs flex items-center justify-center">1</span>
+                    <div><div class="text-xs font-bold text-white">Mastermind</div><div class="text-[10px] text-slate-400">Levels 1-10</div></div>
+                </button>
+                <button onclick="jumpToCategory(1); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-purple-500/20 border-purple-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 font-bold text-xs flex items-center justify-center">2</span>
+                    <div><div class="text-xs font-bold text-white">Lights Out</div><div class="text-[10px] text-slate-400">Levels 11-20</div></div>
+                </button>
+                <button onclick="jumpToCategory(2); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-emerald-500/20 border-emerald-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center">3</span>
+                    <div><div class="text-xs font-bold text-white">Math Scales</div><div class="text-[10px] text-slate-400">Levels 21-30</div></div>
+                </button>
+                <button onclick="jumpToCategory(3); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-amber-500/20 border-amber-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 font-bold text-xs flex items-center justify-center">4</span>
+                    <div><div class="text-xs font-bold text-white">Number Jump</div><div class="text-[10px] text-slate-400">Levels 31-40</div></div>
+                </button>
+                <button onclick="jumpToCategory(4); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-pink-500/20 border-pink-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-400 font-bold text-xs flex items-center justify-center">5</span>
+                    <div><div class="text-xs font-bold text-white">Word Logic</div><div class="text-[10px] text-slate-400">Levels 41-50</div></div>
+                </button>
+                <button onclick="jumpToCategory(5); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-blue-500/20 border-blue-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 font-bold text-xs flex items-center justify-center">6</span>
+                    <div><div class="text-xs font-bold text-white">Color Match</div><div class="text-[10px] text-slate-400">Levels 51-60</div></div>
+                </button>
+                <button onclick="jumpToCategory(6); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-indigo-500/20 border-indigo-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold text-xs flex items-center justify-center">7</span>
+                    <div><div class="text-xs font-bold text-white">Pipe Connect</div><div class="text-[10px] text-slate-400">Levels 61-70</div></div>
+                </button>
+                <button onclick="jumpToCategory(7); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-teal-500/20 border-teal-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-400 font-bold text-xs flex items-center justify-center">8</span>
+                    <div><div class="text-xs font-bold text-white">Memory Grid</div><div class="text-[10px] text-slate-400">Levels 71-80</div></div>
+                </button>
+                <button onclick="jumpToCategory(8); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-orange-500/20 border-orange-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-orange-500/20 text-orange-400 font-bold text-xs flex items-center justify-center">9</span>
+                    <div><div class="text-xs font-bold text-white">Tile Slider</div><div class="text-[10px] text-slate-400">Levels 81-90</div></div>
+                </button>
+                <button onclick="jumpToCategory(9); toggleCategoryModal();" class="p-2.5 rounded-xl glass-panel text-left flex items-center space-x-3 hover:bg-cyan-500/20 border-cyan-500/30 transition">
+                    <span class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 font-bold text-xs flex items-center justify-center">10</span>
+                    <div><div class="text-xs font-bold text-white">Sequences</div><div class="text-[10px] text-slate-400">Levels 91-100</div></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-3">
+        <div class="glass-panel p-6 rounded-3xl max-w-xs w-full text-center relative border border-cyan-500/30 glow-cyan">
+            <div class="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-cyan-500 rounded-2xl mx-auto flex items-center justify-center text-black text-xl font-bold shadow-lg mb-3">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-white mb-1">Level Solved!</h3>
+            <p id="victoryMessage" class="text-slate-400 text-xs mb-5">Brilliant deduction! Synapses firing correctly.</p>
+            <div class="flex space-x-2.5">
+                <button onclick="closeVictoryAndMenu()" class="flex-1 py-2.5 rounded-xl glass-panel font-bold text-slate-300 hover:text-white transition text-xs">Menu</button>
+                <button onclick="advanceToNextLevel()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 font-bold text-black hover:opacity-90 transition shadow-lg text-xs">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hintModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-3">
+        <div class="glass-panel p-5 rounded-2xl max-w-xs w-full text-center relative border border-amber-500/30">
+            <div class="w-10 h-10 bg-amber-500/20 text-amber-400 rounded-xl mx-auto flex items-center justify-center text-base mb-2.5">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <h4 class="text-base font-bold text-white mb-1.5">Hint</h4>
+            <p id="hintText" class="text-slate-300 text-xs mb-5">Look closer at the pattern...</p>
+            <button onclick="closeHint()" class="w-full py-2 rounded-xl bg-amber-500 font-bold text-black hover:bg-amber-400 transition text-xs">Got it</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.24);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(120, now + 0.12);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                }
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundEnabled ? 'fa-solid fa-volume-high text-xs' : 'fa-solid fa-volume-xmark text-xs text-red-400';
+            playSound('click');
+        }
+
+        function toggleCategoryModal() {
+            playSound('click');
+            const modal = document.getElementById('categoryModal');
+            modal.classList.toggle('hidden');
+        }
+
+        let currentLevel = 1;
+        let unlockedLevel = 1;
+        let levelData = {};
+        let currentPuzzleState = {};
+
+        function loadProgress() {
+            const saved = localStorage.getItem('braintester_progress');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    unlockedLevel = data.unlockedLevel || 1;
+                    levelData = data.levelData || {};
+                } catch(e) {}
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('braintester_progress', JSON.stringify({
+                unlockedLevel,
+                levelData
+            }));
+        }
+
+        const categoryNames = [
+            "Mastermind Logic Code",
+            "Lights Out Grid",
+            "Math Scales & Balance",
+            "Dynamic Number Jump",
+            "Word & Lateral Logic",
+            "Color Gradient Match",
+            "Circuit Pipe Connect",
+            "Memory Matrix",
+            "Sliding Tile Puzzle",
+            "Sequences & Numbers"
+        ];
+
+        function getCategoryName(lvl) {
+            return categoryNames[Math.floor((lvl - 1) / 10)];
+        }
+
+        function generatePuzzle(level) {
+            const cat = Math.floor((level - 1) / 10);
+            const sub = ((level - 1) % 10) + 1;
+            
+            let seed = level * 73856093;
+            function rnd() {
+                seed = (seed * 9301 + 49297) % 233280;
+                return seed / 233280;
+            }
+
+            switch(cat) {
+                case 0: return generateMastermind(level, sub, rnd);
+                case 1: return generateLightsOut(level, sub, rnd);
+                case 2: return generateMathScale(level, sub, rnd);
+                case 3: return generateNumberJump(level, sub, rnd);
+                case 4: return generateRiddle(level, sub, rnd);
+                case 5: return generateColorMatch(level, sub, rnd);
+                case 6: return generateCircuit(level, sub, rnd);
+                case 7: return generateMemory(level, sub, rnd);
+                case 8: return generateSliding(level, sub, rnd);
+                case 9: return generateSequence(level, sub, rnd);
+                default: return generateMastermind(level, sub, rnd);
+            }
+        }
+
+        // --- 1. MASTERMIND ---
+        function generateMastermind(level, sub, rnd) {
+            currentPuzzleState = { secret: [Math.floor(rnd()*5)+1, Math.floor(rnd()*5)+1, Math.floor(rnd()*5)+1], currentGuess: [1, 1, 1], attempts: 5, history: [] };
+            return {
+                title: `Mastermind Code #${level}`,
+                instruction: `Crack the 3-digit code (Digits 1–5).`,
+                hint: `Test systematic combos like 1-2-3 first.`,
+                type: 'mastermind',
+                render: renderMastermind
+            };
+        }
+
+        function renderMastermind() {
+            const { currentGuess, attempts, history } = currentPuzzleState;
+            let histHtml = history.map(h => `<div class="flex items-center justify-between bg-slate-900/80 px-2.5 py-1.5 rounded-xl border border-slate-800 text-[11px]"><div class="flex space-x-1.5 font-mono font-bold text-white">${h.guess.map(n => `<span class="w-5 h-5 rounded bg-slate-800 flex items-center justify-center">${n}</span>`).join('')}</div><div class="flex space-x-2 font-bold text-[10px]"><span class="text-emerald-400">🟢:${h.bulls}</span><span class="text-amber-400">🟡:${h.cows}</span></div></div>`).join('');
+            document.getElementById('puzzleArena').innerHTML = `
+                <div class="w-full flex flex-col items-center">
+                    <div class="flex items-center space-x-2 bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] text-slate-300 mb-3"><strong class="text-emerald-400">🟢 Correct</strong> • <strong class="text-amber-400">🟡 Misplaced</strong></div>
+                    ${history.length > 0 ? `<div class="w-full max-w-xs mb-3 space-y-1.5 max-h-32 overflow-y-auto pr-1">${histHtml}</div>` : ''}
+                    <div class="text-[11px] font-semibold text-slate-400 mb-1.5">Attempts Left: ${attempts}</div>
+                    <div class="flex space-x-2.5 mb-5">
+                        ${currentGuess.map((g, i) => `
+                            <div class="flex flex-col items-center">
+                                <button onclick="changeGuessDigit(${i}, 1)" class="w-10 h-8 rounded-t-xl glass-panel text-cyan-400 text-xs"><i class="fa-solid fa-chevron-up"></i></button>
+                                <div class="w-10 h-12 bg-slate-900 border-x border-slate-700 flex items-center justify-center font-bold text-xl mono text-white">${g}</div>
+                                <button onclick="changeGuessDigit(${i}, -1)" class="w-10 h-8 rounded-b-xl glass-panel text-cyan-400 text-xs"><i class="fa-solid fa-chevron-down"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="submitGuess()" class="px-5 py-2.5 bg-cyan-500 text-black font-bold text-xs sm:text-sm rounded-xl hover:bg-cyan-400 transition shadow-lg">Submit Code</button>
+                </div>
+            `;
+        }
+
+        function changeGuessDigit(idx, delta) {
+            playSound('click');
+            let val = currentPuzzleState.currentGuess[idx] + delta;
+            currentPuzzleState.currentGuess[idx] = val > 5 ? 1 : val < 1 ? 5 : val;
+            renderMastermind();
+        }
+
+        function submitGuess() {
+            let bulls = 0, cows = 0, sCopy = [...currentPuzzleState.secret], gCopy = [...currentPuzzleState.currentGuess];
+            for (let i = 0; i < 3; i++) if (gCopy[i] === sCopy[i]) { bulls++; sCopy[i] = null; gCopy[i] = null; }
+            for (let i = 0; i < 3; i++) if (gCopy[i] !== null && sCopy.includes(gCopy[i])) { cows++; sCopy[sCopy.indexOf(gCopy[i])] = null; }
+
+            currentPuzzleState.history.unshift({ guess: [...currentPuzzleState.currentGuess], bulls, cows });
+
+            if (bulls === 3) { playSound('success'); triggerVictory(); } 
+            else {
+                playSound('error'); currentPuzzleState.attempts--;
+                renderMastermind();
+                if (currentPuzzleState.attempts <= 0) { showFeedback("Out of attempts! Resetting...", "error"); setTimeout(() => loadLevel(currentLevel), 1500); }
+            }
+        }
+
+        // --- 2. LIGHTS OUT ---
+        function generateLightsOut(level, sub, rnd) {
+            const size = sub <= 5 ? 3 : 4;
+            let grid = Array(size * size).fill(true);
+            for (let s = 0; s < sub + 2; s++) toggleLightsCell(Math.floor(rnd() * (size*size)), size, grid);
+            currentPuzzleState = { grid, size, target: true };
+            return {
+                title: `Lights Out #${level}`,
+                instruction: `Toggle cells so all lights are turned ON.`,
+                hint: `Work methodically from top corners down.`,
+                type: 'lights_out',
+                render: renderLightsOut
+            };
+        }
+
+        function toggleLightsCell(idx, size, grid) {
+            const r = Math.floor(idx / size), c = idx % size;
+            const cellsToToggle = [idx];
+            if (r > 0) cellsToToggle.push((r - 1) * size + c);
+            if (r < size - 1) cellsToToggle.push((r + 1) * size + c);
+            if (c > 0) cellsToToggle.push(r * size + (c - 1));
+            if (c < size - 1) cellsToToggle.push(r * size + (c + 1));
+            cellsToToggle.forEach(i => grid[i] = !grid[i]);
+        }
+
+        function renderLightsOut() {
+            const { grid, size } = currentPuzzleState;
+            let html = `<div class="grid gap-2 mb-3" style="grid-template-columns: repeat(${size}, minmax(0, 1fr));">`;
+            grid.forEach((on, idx) => {
+                html += `<button onclick="clickLight(${idx})" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl transition-all duration-200 flex items-center justify-center font-bold text-base ${on ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/40 scale-105' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                    <i class="fa-solid ${on ? 'fa-lightbulb' : 'fa-power-off'} text-xs"></i>
+                </button>`;
+            });
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+        }
+
+        function clickLight(idx) {
+            playSound('click');
+            toggleLightsCell(idx, currentPuzzleState.size, currentPuzzleState.grid);
+            renderLightsOut();
+            if (currentPuzzleState.grid.every(v => v === true)) { playSound('success'); triggerVictory(); }
+        }
+
+        // --- 3. MATH SCALES ---
+        function generateMathScale(level, sub, rnd) {
+            const valA = Math.floor(rnd() * 6) + 2, valB = Math.floor(rnd() * 6) + 3;
+            const target = valA * 3 + valB * 2;
+            return {
+                title: `Math Balance #${level}`,
+                instruction: `Find the value of the question mark (?) so the scale balances.`,
+                hint: `Substitute known icon values into the equation.`,
+                type: 'math_scale',
+                render: () => {
+                    document.getElementById('puzzleArena').innerHTML = `
+                        <div class="text-center mb-5">
+                            <div class="text-sm sm:text-base font-bold text-cyan-400 mb-2">🟢 = ${valA} &nbsp;|&nbsp; 🟣 = ${valB}</div>
+                            <div class="text-xl sm:text-2xl font-extrabold mono text-white bg-slate-900/60 p-3 rounded-xl border border-slate-700">3(🟢) + 2(🟣) = <span class="text-amber-400">?</span></div>
+                        </div>
+                        <div class="flex space-x-2 w-full max-w-xs">
+                            <input type="number" id="scaleInput" placeholder="Enter answer" class="flex-1 bg-slate-900 border border-slate-700 px-3 py-2.5 rounded-xl text-center text-white mono font-bold text-sm focus:outline-none focus:border-cyan-500">
+                            <button onclick="checkScale(${target})" class="px-5 py-2.5 bg-cyan-500 text-black font-bold text-xs sm:text-sm rounded-xl hover:bg-cyan-400 transition">Submit</button>
+                        </div>
+                    `;
+                }
+            };
+        }
+
+        function checkScale(correct) {
+            if (parseInt(document.getElementById('scaleInput').value) === correct) { playSound('success'); triggerVictory(); } 
+            else { playSound('error'); showFeedback("Incorrect value! Check your math.", "error"); }
+        }
+
+        // --- 4. DYNAMIC NUMBER JUMP ---
+        function generateNumberJump(level, sub, rnd) {
+            const size = 4;
+            let boardRules = Array(16).fill(0).map(() => Math.floor(rnd() * 3) + 1);
+            boardRules[0] = 0; boardRules[15] = 0; 
+            currentPuzzleState = { pos: 0, target: 15, size, boardRules };
+            return {
+                title: `Dynamic Jump #${level}`,
+                instruction: `Hop from START (0) to END (15).`,
+                hint: `Tile number = exactly how many squares you must move horizontally/vertically.`,
+                type: 'number_jump',
+                render: renderNumberJump
+            };
+        }
+
+        function renderNumberJump() {
+            const { pos, size, boardRules, target } = currentPuzzleState;
+            let html = `<div class="text-xs font-semibold text-cyan-400 mb-3">${pos === 0 ? 'Start your journey!' : `Current Tile Rule: Exact jump of <strong class="text-amber-400 font-bold text-sm">${boardRules[pos]}</strong> steps`}</div>`;
+            html += `<div class="grid grid-cols-4 gap-2 mb-3">`;
+            for (let i = 0; i < size * size; i++) {
+                const isCurrent = i === pos, isTarget = i === target;
+                let bg = isCurrent ? 'bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/40 scale-105' : 
+                         isTarget ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 font-bold' : 'bg-slate-800 border-slate-700 text-slate-300';
+                html += `<button onclick="jumpCell(${i})" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl border flex flex-col items-center justify-center font-bold text-xs transition ${bg}">
+                    <span>${i === 0 ? 'START' : (isTarget ? 'END' : i)}</span>
+                    ${i !== 0 && i !== 15 ? `<span class="text-[9px] opacity-70">hop:${boardRules[i]}</span>` : ''}
+                </button>`;
+            }
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+        }
+
+        function jumpCell(idx) {
+            const { pos, size, boardRules, target } = currentPuzzleState;
+            const dist = Math.abs(Math.floor(pos/size) - Math.floor(idx/size)) + Math.abs(pos%size - idx%size);
+            if (pos === 0 || dist === boardRules[pos]) {
+                playSound('click');
+                currentPuzzleState.pos = idx;
+                renderNumberJump();
+                if (idx === target) { playSound('success'); triggerVictory(); }
+            } else {
+                playSound('error');
+                showFeedback(`Invalid! Current tile requires exactly ${boardRules[pos]} steps.`, "error");
+            }
+        }
+
+        // --- 5. WORD LOGIC ---
+        function generateRiddle(level, sub, rnd) {
+            const r = { q: "I speak without a mouth and hear without ears. What am I?", options: ["An Echo", "A Cloud", "A Shadow", "A Radio"], ans: "An Echo", hint: "Bounces back." };
+            let opts = [...r.options].sort(() => rnd() - 0.5);
+            return {
+                title: `Word Logic #${level}`,
+                instruction: r.q,
+                hint: r.hint,
+                type: 'riddle',
+                render: () => {
+                    document.getElementById('puzzleArena').innerHTML = `
+                        <div class="text-xs sm:text-sm font-semibold text-white mb-5 text-center bg-slate-900/60 p-4 rounded-2xl border border-slate-700">"${r.q}"</div>
+                        <div class="grid grid-cols-2 gap-2.5 w-full max-w-sm">
+                            ${opts.map(opt => `<button onclick="checkRiddle('${opt}', '${r.ans}')" class="py-3 px-3 rounded-xl glass-panel font-bold text-slate-200 hover:bg-cyan-500/20 hover:border-cyan-500 transition text-xs sm:text-sm">${opt}</button>`).join('')}
+                        </div>
+                    `;
+                }
+            };
+        }
+
+        function checkRiddle(selected, correct) {
+            if (selected === correct) { playSound('success'); triggerVictory(); } 
+            else { playSound('error'); showFeedback("Incorrect answer.", "error"); }
+        }
+
+        // --- 6. COLOR MATCH ---
+        function generateColorMatch(level, sub, rnd) {
+            currentPuzzleState = { targetR: Math.floor(rnd() * 200) + 20, targetG: Math.floor(rnd() * 200) + 20, targetB: Math.floor(rnd() * 200) + 20 };
+            return {
+                title: `Color Match #${level}`,
+                instruction: `Adjust the RGB sliders to match the target color swatch.`,
+                hint: `Red + Green = Yellow, Red + Blue = Magenta, Green + Blue = Cyan.`,
+                type: 'color_match',
+                render: renderColorMatch
+            };
+        }
+
+        function renderColorMatch() {
+            const { targetR, targetG, targetB } = currentPuzzleState;
+            document.getElementById('puzzleArena').innerHTML = `
+                <div class="flex items-center space-x-5 mb-5">
+                    <div class="text-center"><div class="text-[10px] text-slate-400 mb-1.5">TARGET</div><div class="w-16 h-16 rounded-2xl shadow-lg border border-white/20" style="background: rgb(${targetR}, ${targetG}, ${targetB})"></div></div>
+                    <div class="text-center"><div class="text-[10px] text-slate-400 mb-1.5">YOUR MIX</div><div id="userColorBox" class="w-16 h-16 rounded-2xl shadow-lg border border-white/20" style="background: rgb(128, 128, 128)"></div></div>
+                </div>
+                <div class="w-full max-w-xs space-y-3 mb-5">
+                    <input type="range" min="0" max="255" value="128" id="rangeR" oninput="updateColor()" class="w-full accent-rose-500">
+                    <input type="range" min="0" max="255" value="128" id="rangeG" oninput="updateColor()" class="w-full accent-emerald-500">
+                    <input type="range" min="0" max="255" value="128" id="rangeB" oninput="updateColor()" class="w-full accent-blue-500">
+                </div>
+                <button onclick="checkColor()" class="px-5 py-2.5 bg-cyan-500 text-black font-bold text-xs sm:text-sm rounded-xl hover:bg-cyan-400 transition">Check Match</button>
+            `;
+            updateColor();
+        }
+
+        function updateColor() {
+            document.getElementById('userColorBox').style.background = `rgb(${document.getElementById('rangeR').value}, ${document.getElementById('rangeG').value}, ${document.getElementById('rangeB').value})`;
+        }
+
+        function checkColor() {
+            const { targetR, targetG, targetB } = currentPuzzleState;
+            const diff = Math.abs(targetR - document.getElementById('rangeR').value) + Math.abs(targetG - document.getElementById('rangeG').value) + Math.abs(targetB - document.getElementById('rangeB').value);
+            if (diff <= 30) { playSound('success'); triggerVictory(); } 
+            else { playSound('error'); showFeedback(`Difference: ${diff} (Aim for < 30)`, "error"); }
+        }
+
+        // --- 7. CIRCUIT PIPE CONNECT ---
+        function generateCircuit(level, sub, rnd) {
+            const size = sub <= 5 ? 4 : 5;
+            let cells = Array(size * size).fill(0);
+            let visited = Array(size * size).fill(false);
+            let stack = [0];
+            visited[0] = true;
+            
+            while(stack.length > 0) {
+                let curr = stack[stack.length - 1];
+                let r = Math.floor(curr / size), c = curr % size;
+                
+                let neighbors = [];
+                if (r > 0 && !visited[curr - size]) neighbors.push({ idx: curr - size, dir: 1, opp: 4 });
+                if (c < size - 1 && !visited[curr + 1]) neighbors.push({ idx: curr + 1, dir: 2, opp: 8 });
+                if (r < size - 1 && !visited[curr + size]) neighbors.push({ idx: curr + size, dir: 4, opp: 1 });
+                if (c > 0 && !visited[curr - 1]) neighbors.push({ idx: curr - 1, dir: 8, opp: 2 });
+                
+                if (neighbors.length > 0) {
+                    let n = neighbors[Math.floor(rnd() * neighbors.length)];
+                    cells[curr] |= n.dir;
+                    cells[n.idx] |= n.opp;
+                    visited[n.idx] = true;
+                    stack.push(n.idx);
+                } else {
+                    stack.pop();
+                }
+            }
+            
+            for (let i = 0; i < size * size; i++) {
+                if (rnd() > 0.6) {
+                    let r = Math.floor(i / size), c = i % size;
+                    let dirs = [];
+                    if (r > 0) dirs.push({ idx: i - size, dir: 1, opp: 4 });
+                    if (c < size - 1) dirs.push({ idx: i + 1, dir: 2, opp: 8 });
+                    if (dirs.length > 0) {
+                        let d = dirs[Math.floor(rnd() * dirs.length)];
+                        cells[i] |= d.dir; cells[d.idx] |= d.opp;
+                    }
+                }
+            }
+
+            let rotations = Array(size * size).fill(0).map(() => Math.floor(rnd() * 4));
+            currentPuzzleState = { baseCells: cells, rotations, size, won: false };
+
+            return {
+                title: `Circuit Pipe #${level}`,
+                instruction: `Rotate pipes to connect Start (S) to End (E).`,
+                hint: `Follow the glowing cyan path.`,
+                type: 'circuit',
+                render: renderCircuit
+            };
+        }
+
+        function getRotatedMask(mask, rots) {
+            let m = mask;
+            let r_mod = rots % 4;
+            for(let r = 0; r < r_mod; r++) m = ((m << 1) | (m >> 3)) & 15;
+            return m;
+        }
+
+        function renderCircuit() {
+            const { baseCells, rotations, size } = currentPuzzleState;
+            
+            let connected = Array(size * size).fill(false);
+            let stack = [0];
+            connected[0] = true;
+            
+            while(stack.length > 0) {
+                let curr = stack.pop();
+                let r = Math.floor(curr / size), c = curr % size;
+                let cMask = getRotatedMask(baseCells[curr], rotations[curr]);
+
+                if (r > 0 && (cMask & 1)) {
+                    let nIdx = curr - size; let nMask = getRotatedMask(baseCells[nIdx], rotations[nIdx]);
+                    if ((nMask & 4) && !connected[nIdx]) { connected[nIdx] = true; stack.push(nIdx); }
+                }
+                if (c < size - 1 && (cMask & 2)) {
+                    let nIdx = curr + 1; let nMask = getRotatedMask(baseCells[nIdx], rotations[nIdx]);
+                    if ((nMask & 8) && !connected[nIdx]) { connected[nIdx] = true; stack.push(nIdx); }
+                }
+                if (r < size - 1 && (cMask & 4)) {
+                    let nIdx = curr + size; let nMask = getRotatedMask(baseCells[nIdx], rotations[nIdx]);
+                    if ((nMask & 1) && !connected[nIdx]) { connected[nIdx] = true; stack.push(nIdx); }
+                }
+                if (c > 0 && (cMask & 8)) {
+                    let nIdx = curr - 1; let nMask = getRotatedMask(baseCells[nIdx], rotations[nIdx]);
+                    if ((nMask & 2) && !connected[nIdx]) { connected[nIdx] = true; stack.push(nIdx); }
+                }
+            }
+
+            let html = `<div class="grid gap-1 sm:gap-1.5 w-full max-w-[280px] sm:max-w-xs mx-auto" style="grid-template-columns: repeat(${size}, minmax(0, 1fr));">`;
+            
+            for(let i = 0; i < size * size; i++) {
+                let mask = baseCells[i];
+                let rot = rotations[i];
+                let isStart = i === 0, isEnd = i === size * size - 1, isLit = connected[i];
+                
+                let colorClass = isLit ? 'bg-cyan-400' : 'bg-slate-700';
+                if (isStart) colorClass = 'bg-emerald-400';
+                else if (isEnd && isLit) colorClass = 'bg-emerald-400';
+                else if (isEnd) colorClass = 'bg-rose-500';
+
+                html += `<button onclick="rotatePipe(${i})" class="w-full relative glass-panel rounded-lg flex items-center justify-center overflow-hidden transition active:scale-95" style="aspect-ratio: 1/1;">
+                    <div class="absolute inset-0 transition-transform duration-300 ease-in-out" style="transform: rotate(${rot * 90}deg);">
+                        <div class="absolute w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${colorClass} top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-colors duration-300"></div>
+                        ${mask & 1 ? `<div class="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 sm:w-3 h-1/2 ${colorClass} transition-colors duration-300"></div>` : ''}
+                        ${mask & 2 ? `<div class="absolute top-1/2 right-0 -translate-y-1/2 w-1/2 h-2.5 sm:h-3 ${colorClass} transition-colors duration-300"></div>` : ''}
+                        ${mask & 4 ? `<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 sm:w-3 h-1/2 ${colorClass} transition-colors duration-300"></div>` : ''}
+                        ${mask & 8 ? `<div class="absolute top-1/2 left-0 -translate-y-1/2 w-1/2 h-2.5 sm:h-3 ${colorClass} transition-colors duration-300"></div>` : ''}
+                    </div>
+                    ${isStart ? '<div class="absolute top-1 left-1 text-[8px] font-bold text-emerald-400 bg-slate-900/80 px-0.5 rounded z-20">S</div>' : ''}
+                    ${isEnd ? '<div class="absolute bottom-1 right-1 text-[8px] font-bold text-rose-400 bg-slate-900/80 px-0.5 rounded z-20">E</div>' : ''}
+                </button>`;
+            }
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+
+            if (connected[size * size - 1] && !currentPuzzleState.won) {
+                currentPuzzleState.won = true;
+                setTimeout(() => { playSound('success'); triggerVictory(); }, 400);
+            }
+        }
+
+        function rotatePipe(idx) {
+            if(currentPuzzleState.won) return;
+            playSound('click');
+            currentPuzzleState.rotations[idx]++;
+            renderCircuit();
+        }
+
+        // --- 8. MEMORY MATRIX ---
+        function generateMemory(level, sub, rnd) {
+            const size = 4, count = sub + 2;
+            let pattern = [];
+            while (pattern.length < count) {
+                let idx = Math.floor(rnd() * (size * size));
+                if (!pattern.includes(idx)) pattern.push(idx);
+            }
+            currentPuzzleState = { pattern, userSelected: [], size, phase: 'memorize' };
+            return {
+                title: `Memory Matrix #${level}`,
+                instruction: `Memorize glowing tiles before they disappear!`,
+                hint: `Focus on visual clusters.`,
+                type: 'memory',
+                render: renderMemory
+            };
+        }
+
+        function renderMemory() {
+            const { pattern, userSelected, size, phase } = currentPuzzleState;
+            let html = `<div class="grid grid-cols-4 gap-2 mb-3">`;
+            for (let i = 0; i < size * size; i++) {
+                let bg = (phase === 'memorize' && pattern.includes(i)) ? 'bg-cyan-400 scale-105' : userSelected.includes(i) ? 'bg-purple-500 text-white' : 'bg-slate-800 border-slate-700';
+                html += `<button onclick="clickMemory(${i})" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl border transition ${bg}"></button>`;
+            }
+            html += `</div><div class="text-[11px] font-semibold text-cyan-400">${phase === 'memorize' ? 'Memorize pattern...' : 'Select the glowing tiles!'}</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+
+            if (phase === 'memorize') setTimeout(() => { currentPuzzleState.phase = 'recall'; renderMemory(); }, 2000);
+        }
+
+        function clickMemory(idx) {
+            if (currentPuzzleState.phase !== 'recall') return;
+            playSound('click');
+            if (!currentPuzzleState.userSelected.includes(idx)) currentPuzzleState.userSelected.push(idx);
+            renderMemory();
+
+            if (currentPuzzleState.userSelected.length === currentPuzzleState.pattern.length) {
+                if (currentPuzzleState.pattern.every(p => currentPuzzleState.userSelected.includes(p))) { playSound('success'); triggerVictory(); } 
+                else {
+                    playSound('error'); showFeedback("Incorrect recall! Try again.", "error");
+                    setTimeout(() => { currentPuzzleState.userSelected = []; currentPuzzleState.phase = 'memorize'; renderMemory(); }, 1000);
+                }
+            }
+        }
+
+        // --- 9. SLIDING TILE ---
+        function generateSliding(level, sub, rnd) {
+            let tiles = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            for (let i = 0; i < 20; i++) {
+                let e = tiles.indexOf(0), n = [];
+                if (Math.floor(e / 3) > 0) n.push(e - 3); if (Math.floor(e / 3) < 2) n.push(e + 3);
+                if (e % 3 > 0) n.push(e - 1); if (e % 3 < 2) n.push(e + 1);
+                let randN = n[Math.floor(rnd() * n.length)];
+                tiles[e] = tiles[randN]; tiles[randN] = 0;
+            }
+            currentPuzzleState = { tiles };
+            return {
+                title: `Tile Slider #${level}`,
+                instruction: `Slide tiles into sequential order (1 to 8).`,
+                hint: `Solve top row first.`,
+                type: 'sliding',
+                render: renderSliding
+            };
+        }
+
+        function renderSliding() {
+            let html = `<div class="grid grid-cols-3 gap-2 mb-3">`;
+            currentPuzzleState.tiles.forEach((t, idx) => {
+                html += t === 0 ? `<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-900/40 border border-slate-800"></div>` : 
+                                  `<button onclick="slideTile(${idx})" class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl glass-panel font-bold text-lg text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500 transition shadow-md">${t}</button>`;
+            });
+            document.getElementById('puzzleArena').innerHTML = html + `</div>`;
+        }
+
+        function slideTile(idx) {
+            const emptyIdx = currentPuzzleState.tiles.indexOf(0);
+            const dist = Math.abs(Math.floor(idx / 3) - Math.floor(emptyIdx / 3)) + Math.abs((idx % 3) - (emptyIdx % 3));
+            if (dist === 1) {
+                playSound('click');
+                currentPuzzleState.tiles[emptyIdx] = currentPuzzleState.tiles[idx];
+                currentPuzzleState.tiles[idx] = 0;
+                renderSliding();
+                if (currentPuzzleState.tiles.every((t, i) => i === 8 ? t === 0 : t === i + 1)) { playSound('success'); triggerVictory(); }
+            } else playSound('error');
+        }
+
+        // --- 10. SEQUENCES ---
+        function generateSequence(level, sub, rnd) {
+            let seq, ans, hint;
+            if (sub === 1) { seq = [2, 4, 6, 8]; ans = 10; hint = "+2"; } 
+            else if (sub === 2) { seq = [2, 4, 8, 16]; ans = 32; hint = "×2"; } 
+            else if (sub === 3) { seq = [1, 4, 9, 16]; ans = 25; hint = "Squares: 1², 2², 3²..."; } 
+            else if (sub === 4) { seq = [1, 1, 2, 3, 5, 8]; ans = 13; hint = "Fibonacci"; } 
+            else { seq = [3, 6, 11, 18, 27]; ans = 38; hint = "Differences increase by +2"; }
+
+            let choices = [ans];
+            while (choices.length < 4) {
+                let offset = (Math.floor(rnd() * 10) + 1) * (rnd() > 0.5 ? 1 : -1);
+                let wrong = ans + offset;
+                if (!choices.includes(wrong) && wrong >= 0) choices.push(wrong);
+            }
+            choices.sort(() => rnd() - 0.5);
+
+            return {
+                title: `Sequence Puzzle #${level}`,
+                instruction: "Find the missing number in the sequence:",
+                hint: hint,
+                type: 'multiple_choice',
+                displayHtml: `<div class="text-xl sm:text-2xl font-bold mono tracking-wider text-cyan-400 mb-5 bg-slate-900/60 px-4 py-3 rounded-xl border border-cyan-500/20 text-center w-full">${seq.join(', ')}, <span class="text-amber-400 underline decoration-dashed">?</span></div>
+                              <div class="grid grid-cols-2 gap-2.5 w-full max-w-xs">
+                                ${choices.map(c => `<button onclick="checkSequence(${c},${ans})" class="py-2.5 rounded-xl glass-panel font-bold text-base text-white hover:bg-cyan-500/20 hover:border-cyan-500 transition active:scale-95">${c}</button>`).join('')}
+                              </div>`
+            };
+        }
+
+        function checkSequence(selected, correct) {
+            if (selected === correct) { playSound('success'); triggerVictory(); } 
+            else { playSound('error'); showFeedback("Incorrect sequence! Try again.", "error"); }
+        }
+
+        // --- CORE LOGIC ---
+        function renderLevelGrid() {
+            let html = '', completed = 0, stars = 0;
+            for (let i = 1; i <= 100; i++) {
+                const isUnlocked = i <= unlockedLevel, isCompleted = levelData[i]?.completed;
+                if (isCompleted) { completed++; stars += levelData[i].stars || 1; }
+                let btnClass = isUnlocked ? (isCompleted ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 font-bold' : 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300 font-bold') : 'glass-panel text-slate-500 border-slate-800 cursor-not-allowed';
+                html += `<button onclick="selectLevel(${i})" ${!isUnlocked ? 'disabled' : ''} class="h-10 rounded-xl border flex flex-col items-center justify-center transition active:scale-95 ${btnClass}">
+                    <span class="text-xs">${i}</span>${isCompleted ? '<i class="fa-solid fa-star text-[8px] text-amber-400"></i>' : ''}</button>`;
+            }
+            document.getElementById('levelGrid').innerHTML = html;
+            document.getElementById('completedCount').innerText = completed;
+            document.getElementById('totalStars').innerText = stars;
+        }
+
+        function openMenu(silent = false) {
+            if (!silent) playSound('click');
+            renderLevelGrid();
+            document.getElementById('menuView').classList.remove('hidden');
+            document.getElementById('gameView').classList.add('hidden');
+        }
+
+        function resumeGame() { playSound('click'); loadLevel(unlockedLevel <= 100 ? unlockedLevel : 100); }
+        function selectLevel(lvl) { playSound('click'); loadLevel(lvl); }
+
+        function loadLevel(lvl) {
+            currentLevel = lvl;
+            document.getElementById('menuView').classList.add('hidden');
+            document.getElementById('gameView').classList.remove('hidden');
+            document.getElementById('levelTitleDisplay').innerText = `Level ${lvl}`;
+            document.getElementById('levelCategoryTag').innerText = getCategoryName(lvl);
+            document.getElementById('prevBtn').disabled = lvl <= 1;
+            document.getElementById('nextBtn').disabled = lvl >= unlockedLevel;
+
+            currentPuzzleState = {};
+            const puzzle = generatePuzzle(lvl);
+            currentPuzzleState._puzzleDef = puzzle;
+            
+            if (puzzle.render) puzzle.render(); else if (puzzle.displayHtml) document.getElementById('puzzleArena').innerHTML = puzzle.displayHtml;
+            document.getElementById('puzzleStatus').innerText = puzzle.instruction;
+        }
+
+        function restartCurrentLevel() { playSound('click'); loadLevel(currentLevel); }
+        function prevLevel() { if (currentLevel > 1) loadLevel(currentLevel - 1); }
+        function nextLevel() { if (currentLevel < unlockedLevel) loadLevel(currentLevel + 1); }
+
+        function skipLevel() {
+            playSound('click');
+            if (!levelData[currentLevel]) levelData[currentLevel] = { completed: true, stars: 1 };
+            if (currentLevel >= unlockedLevel && unlockedLevel < 100) unlockedLevel = currentLevel + 1;
+            saveProgress();
+            if (currentLevel < 100) loadLevel(currentLevel + 1); else openMenu();
+        }
+
+        function jumpToCategory(catIndex) { 
+            playSound('click'); 
+            loadLevel(catIndex * 10 + 1); 
+        }
+
+        function showHint() {
+            playSound('click');
+            document.getElementById('hintText').innerText = currentPuzzleState._puzzleDef?.hint || "Think outside the box!";
+            document.getElementById('hintModal').classList.remove('hidden');
+        }
+
+        function closeHint() { playSound('click'); document.getElementById('hintModal').classList.add('hidden'); }
+
+        function showFeedback(msg, type) {
+            const status = document.getElementById('puzzleStatus');
+            status.innerText = msg; status.className = `text-[11px] font-semibold ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}`;
+            setTimeout(() => { if (currentPuzzleState?._puzzleDef) { status.innerText = currentPuzzleState._puzzleDef.instruction; status.className = 'text-[11px] font-medium text-slate-400'; } }, 2500);
+        }
+
+        function triggerVictory() {
+            levelData[currentLevel] = { completed: true, stars: 1 };
+            if (currentLevel >= unlockedLevel && unlockedLevel < 100) unlockedLevel = currentLevel + 1;
+            saveProgress();
+            confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+            document.getElementById('victoryModal').classList.remove('hidden');
+        }
+
+        function closeVictoryAndMenu() { document.getElementById('victoryModal').classList.add('hidden'); openMenu(); }
+        function advanceToNextLevel() { document.getElementById('victoryModal').classList.add('hidden'); if (currentLevel < 100) loadLevel(currentLevel + 1); else openMenu(); }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset all progress?")) {
+                localStorage.removeItem('braintester_progress'); unlockedLevel = 1; levelData = {}; renderLevelGrid(); playSound('click');
+                openMenu(true);
+            }
+        }
+
+        // Direct Load on Startup - Boots directly into Level Select Menu
+        window.onload = () => { 
+            loadProgress(); 
+            openMenu(true);
+        };
+    </script>
+</body>
+</html>
