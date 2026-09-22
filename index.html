@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synapse 100 - Ultimate Brain Teaser</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: '#131b2e',
+                        cardHover: '#1c2844',
+                        accentCyan: '#06b6d4',
+                        accentPurple: '#8b5cf6',
+                        accentEmerald: '#10b981',
+                        accentAmber: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Confetti JS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+            user-select: none;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(19, 27, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25);
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .animate-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden relative selection:bg-cyan-500 selection:text-black">
+
+    <!-- Background Ambient Glows -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none animate-glow"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none animate-glow" style="animation-delay: 1.5s;"></div>
+
+    <!-- Header -->
+    <header class="w-full max-w-5xl mx-auto px-4 py-6 flex items-center justify-between z-10">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goToMenu()">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg glow-cyan">
+                <i class="fa-solid fa-brain text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-cyan-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">SYNAPSE 100</h1>
+                <p class="text-xs text-slate-400 tracking-wide font-medium">100 Unique Brain Teasers</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleSound()" id="soundBtn" class="w-10 h-10 rounded-xl glass-panel flex items-center justify-center text-slate-300 hover:text-cyan-400 transition-all hover:scale-105 active:scale-95" title="Toggle Sound">
+                <i class="fa-solid fa-volume-high text-sm" id="soundIcon"></i>
+            </button>
+            <button onclick="openMenu()" class="px-4 py-2 rounded-xl glass-panel flex items-center space-x-2 text-slate-300 hover:text-white hover:border-cyan-500/50 transition-all hover:scale-105 active:scale-95">
+                <i class="fa-solid fa-grid-2 text-cyan-400"></i>
+                <span class="text-sm font-semibold">Levels</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-3xl mx-auto px-4 flex-1 flex flex-col justify-center items-center my-6 z-10">
+        
+        <!-- MENU VIEW -->
+        <div id="menuView" class="w-full flex flex-col items-center">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">Challenge Your Mind</h2>
+                <p class="text-slate-400 text-sm md:text-base max-w-md mx-auto">100 hand-crafted, entirely unique logic puzzles, riddles, math tests, and spatial teasers.</p>
+                <div class="mt-4 flex items-center justify-center space-x-6 text-xs text-slate-400">
+                    <span class="flex items-center space-x-1.5"><i class="fa-solid fa-trophy text-amber-400"></i> <strong id="completedCount" class="text-slate-200">0</strong>/100 Solved</span>
+                    <span class="flex items-center space-x-1.5"><i class="fa-solid fa-star text-purple-400"></i> <strong id="totalStars" class="text-slate-200">0</strong> Stars</span>
+                </div>
+            </div>
+
+            <!-- Category Tabs / Quick Jump -->
+            <div class="w-full grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
+                <button onclick="jumpToCategory(0)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-cyan-400 hover:bg-cyan-500/10 transition">1-10: Sequences</button>
+                <button onclick="jumpToCategory(1)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-purple-400 hover:bg-purple-500/10 transition">11-20: Lights Out</button>
+                <button onclick="jumpToCategory(2)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 transition">21-30: Math Scales</button>
+                <button onclick="jumpToCategory(3)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-amber-400 hover:bg-amber-500/10 transition">31-40: Number Jump</button>
+                <button onclick="jumpToCategory(4)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-pink-400 hover:bg-pink-500/10 transition">41-50: Word Logic</button>
+                <button onclick="jumpToCategory(5)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-blue-400 hover:bg-blue-500/10 transition">51-60: Color Match</button>
+                <button onclick="jumpToCategory(6)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-indigo-400 hover:bg-indigo-500/10 transition">61-70: Pipe Connect</button>
+                <button onclick="jumpToCategory(7)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-teal-400 hover:bg-teal-500/10 transition">71-80: Memory Grid</button>
+                <button onclick="jumpToCategory(8)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-orange-400 hover:bg-orange-500/10 transition">81-90: Tile Slider</button>
+                <button onclick="jumpToCategory(9)" class="px-3 py-2 rounded-lg glass-panel text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition">91-100: Mastermind</button>
+            </div>
+
+            <!-- Level Grid -->
+            <div class="w-full glass-panel rounded-2xl p-4 md:p-6 max-h-[50vh] overflow-y-auto">
+                <div id="levelGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2.5">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div class="mt-6 flex space-x-4">
+                <button onclick="resumeGame()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-black hover:opacity-90 transition shadow-lg glow-cyan flex items-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Continue Game</span>
+                </button>
+                <button onclick="resetProgress()" class="px-4 py-3 rounded-xl glass-panel font-semibold text-slate-400 hover:text-rose-400 transition text-sm">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> Reset Data
+                </button>
+            </div>
+        </div>
+
+        <!-- GAME VIEW -->
+        <div id="gameView" class="w-full flex flex-col items-center hidden">
+            <!-- Level Top Bar -->
+            <div class="w-full flex items-center justify-between mb-4 px-2">
+                <div class="flex items-center space-x-3">
+                    <button onclick="openMenu()" class="w-9 h-9 rounded-lg glass-panel flex items-center justify-center text-slate-300 hover:text-white transition">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <span id="levelCategoryTag" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Category</span>
+                        <h3 id="levelTitleDisplay" class="text-lg font-bold text-white">Level 1</h3>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="showHint()" class="px-3 py-1.5 rounded-lg glass-panel text-xs font-semibold text-amber-400 hover:bg-amber-500/10 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <span>Hint</span>
+                    </button>
+                    <button onclick="skipLevel()" class="px-3 py-1.5 rounded-lg glass-panel text-xs font-semibold text-purple-400 hover:bg-purple-500/10 transition flex items-center space-x-1.5" title="Skip to next level">
+                        <i class="fa-solid fa-forward-step"></i>
+                        <span>Skip</span>
+                    </button>
+                    <button onclick="restartCurrentLevel()" class="w-9 h-9 rounded-lg glass-panel flex items-center justify-center text-slate-300 hover:text-cyan-400 transition" title="Restart Level">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Puzzle Arena Card -->
+            <div id="puzzleArena" class="w-full glass-panel rounded-2xl p-6 md:p-8 flex flex-col items-center relative min-h-[420px] justify-between shadow-2xl">
+                <!-- Dynamically injected puzzle content -->
+            </div>
+
+            <!-- Bottom Navigation in Game -->
+            <div class="w-full flex justify-between items-center mt-4 px-2">
+                <button onclick="prevLevel()" id="prevBtn" class="px-4 py-2 rounded-xl glass-panel text-sm font-semibold text-slate-300 hover:text-white transition flex items-center space-x-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                    <span>Prev</span>
+                </button>
+                <div id="puzzleStatus" class="text-xs font-medium text-slate-400 text-center">
+                    Solve the puzzle to proceed
+                </div>
+                <button onclick="nextLevel()" id="nextBtn" class="px-4 py-2 rounded-xl glass-panel text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition flex items-center space-x-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <span>Next</span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-5xl mx-auto px-4 py-4 text-center text-xs text-slate-500 z-10">
+        Synapse 100 • 100 Unique Brain Teasers & Logic Puzzles
+    </footer>
+
+    <!-- Victory Modal -->
+    <div id="victoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="glass-panel p-8 rounded-3xl max-w-sm w-full text-center relative border border-cyan-500/30 glow-cyan animate-bounce-in">
+            <div class="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-cyan-500 rounded-2xl mx-auto flex items-center justify-center text-black text-2xl font-bold shadow-lg mb-4">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-2xl font-extrabold text-white mb-1">Level Solved!</h3>
+            <p id="victoryMessage" class="text-slate-400 text-sm mb-6">Brilliant deduction! Synapses firing correctly.</p>
+            <div class="flex space-x-3">
+                <button onclick="closeVictoryAndMenu()" class="flex-1 py-3 rounded-xl glass-panel font-bold text-slate-300 hover:text-white transition text-sm">Levels</button>
+                <button onclick="advanceToNextLevel()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 font-bold text-black hover:opacity-90 transition shadow-lg text-sm">Next Level <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hintModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center relative border border-amber-500/30">
+            <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-xl mx-auto flex items-center justify-center text-xl mb-3">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white mb-2">Hint</h4>
+            <p id="hintText" class="text-slate-300 text-sm mb-6">Look closer at the pattern...</p>
+            <button onclick="closeHint()" class="w-full py-2.5 rounded-xl bg-amber-500 font-bold text-black hover:bg-amber-400 transition text-sm">Got it</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        // --- SOUND SYNTHESIZER (Web Audio API) ---
+        let soundEnabled = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(120, now + 0.15);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm text-red-400';
+            playSound('click');
+        }
+
+        // --- GAME STATE ---
+        let currentLevel = 1;
+        let unlockedLevel = 1;
+        let levelData = {}; // Stores stars / completion status
+        let currentPuzzleState = null;
+
+        // Load saved progress
+        function loadProgress() {
+            const saved = localStorage.getItem('synapse100_progress');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    unlockedLevel = data.unlockedLevel || 1;
+                    levelData = data.levelData || {};
+                } catch(e) {}
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('synapse100_progress', JSON.stringify({
+                unlockedLevel,
+                levelData
+            }));
+        }
+
+        // --- CATEGORY NAMES & DESCRIPTIONS ---
+        const categoryNames = [
+            "Sequences & Numbers",
+            "Lights Out Grid",
+            "Math Scales & Balance",
+            "Number Jump Maze",
+            "Word & Lateral Logic",
+            "Color Gradient Match",
+            "Circuit Pipe Connect",
+            "Memory Matrix",
+            "Sliding Tile Puzzle",
+            "Mastermind Logic Code"
+        ];
+
+        function getCategoryName(lvl) {
+            return categoryNames[Math.floor((lvl - 1) / 10)];
+        }
+
+        // --- PUZZLE GENERATOR (100 Unique Levels) ---
+        function generatePuzzle(level) {
+            const cat = Math.floor((level - 1) / 10);
+            const sub = ((level - 1) % 10) + 1;
+            
+            // Seeded random
+            let seed = level * 73856093;
+            function rnd() {
+                seed = (seed * 9301 + 49297) % 233280;
+                return seed / 233280;
+            }
+
+            switch(cat) {
+                case 0: // Sequences (1-10)
+                    return generateSequence(level, sub, rnd);
+                case 1: // Lights Out (11-20)
+                    return generateLightsOut(level, sub, rnd);
+                case 2: // Math Scales (21-30)
+                    return generateMathScale(level, sub, rnd);
+                case 3: // Number Jump (31-40)
+                    return generateNumberJump(level, sub, rnd);
+                case 4: // Word & Lateral Logic (41-50)
+                    return generateRiddle(level, sub, rnd);
+                case 5: // Color Match (51-60)
+                    return generateColorMatch(level, sub, rnd);
+                case 6: // Circuit Pipe (61-70)
+                    return generateCircuit(level, sub, rnd);
+                case 7: // Memory Matrix (71-80)
+                    return generateMemory(level, sub, rnd);
+                case 8: // Sliding Tile (81-90)
+                    return generateSliding(level, sub, rnd);
+                case 9: // Mastermind (91-100)
+                    return generateMastermind(level, sub, rnd);
+                default:
+                    return generateSequence(level, sub, rnd);
+            }
+        }
+
+        // --- 1. SEQUENCES (Levels 1-10) ---
+        function generateSequence(level, sub, rnd) {
+            let seq, ans, hint;
+            if (sub === 1) {
+                const start = Math.floor(rnd() * 5) + 2;
+                const step = Math.floor(rnd() * 3) + 2;
+                seq = [start, start+step, start+step*2, start+step*3];
+                ans = start + step * 4;
+                hint = `Each number increases by +${step}.`;
+            } else if (sub === 2) {
+                const base = Math.floor(rnd() * 2) + 2;
+                seq = [base, base*2, base*4, base*8];
+                ans = base * 16;
+                hint = `Each number doubles in value (×2).`;
+            } else if (sub === 3) {
+                const start = Math.floor(rnd() * 3) + 1;
+                seq = [start*start, (start+1)*(start+1), (start+2)*(start+2), (start+3)*(start+3)];
+                ans = (start+4)*(start+4);
+                hint = `Look at squared numbers: 1², 2², 3², 4²...`;
+            } else if (sub === 4) {
+                seq = [1, 1, 2, 3, 5, 8];
+                ans = 13;
+                hint = `Famous Fibonacci sequence: add the last two numbers.`;
+            } else if (sub === 5) {
+                seq = [2, 3, 5, 7, 11];
+                ans = 13;
+                hint = `Sequence of consecutive prime numbers.`;
+            } else if (sub === 6) {
+                seq = [10, 20, 15, 30, 25];
+                ans = 50;
+                hint = `Alternating operations: ×2 then -5.`;
+            } else if (sub === 7) {
+                seq = [3, 6, 11, 18, 27];
+                ans = 38;
+                hint = `Differences between consecutive terms increase by +2 (+3, +5, +7, +9...).`;
+            } else if (sub === 8) {
+                const start = Math.floor(rnd() * 2) + 1;
+                seq = [start, start*3, start*9, start*27];
+                ans = start * 81;
+                hint = `Each term is multiplied by 3.`;
+            } else if (sub === 9) {
+                seq = [100, 90, 75, 55];
+                ans = 30;
+                hint = `Subtracting decrements: -10, -15, -20, -25...`;
+            } else {
+                seq = [2, 3, 6, 7, 14, 15];
+                ans = 30;
+                hint = `Pattern: +1, then ×2 alternating.`;
+            }
+
+            let choices = [ans];
+            while (choices.length < 4) {
+                let offset = (Math.floor(rnd() * 10) + 1) * (rnd() > 0.5 ? 1 : -1);
+                let wrong = ans + offset;
+                if (!choices.includes(wrong) && wrong >= 0) choices.push(wrong);
+            }
+            choices.sort(() => rnd() - 0.5);
+
+            return {
+                title: `Sequence Puzzle #${level}`,
+                instruction: "Find the missing number in the sequence:",
+                hint: hint,
+                type: 'multiple_choice',
+                displayHtml: `<div class="text-2xl md:text-3xl font-bold mono tracking-widest text-cyan-400 mb-6 bg-slate-900/60 px-6 py-4 rounded-xl border border-cyan-500/20">${seq.join(', ')}, <span class="text-amber-400 underline decoration-dashed">?</span></div>
+                              <div class="grid grid-cols-2 gap-3 w-full max-w-xs">
+                                ${choices.map(c => `<button onclick="checkSequence(${c}, ${ans})" class="py-3 rounded-xl glass-panel font-bold text-lg text-white hover:bg-cyan-500/20 hover:border-cyan-500 transition active:scale-95">${c}</button>`).join('')}
+                              </div>`
+            };
+        }
+
+        function checkSequence(selected, correct) {
+            if (selected === correct) {
+                playSound('success');
+                triggerVictory();
+            } else {
+                playSound('error');
+                showFeedback("Incorrect sequence! Try again.", "error");
+            }
+        }
+
+        // --- 2. LIGHTS OUT (Levels 11-20) ---
+        function generateLightsOut(level, sub, rnd) {
+            const size = sub <= 5 ? 3 : 4;
+            let grid = Array(size * size).fill(true);
+            let scrambles = sub + 2;
+            let indices = [];
+            for (let i = 0; i < size*size; i++) indices.push(i);
+            
+            for (let s = 0; s < scrambles; s++) {
+                let idx = Math.floor(rnd() * indices.length);
+                toggleLightsCell(indices[idx], size, grid);
+            }
+
+            currentPuzzleState = { grid, size, target: true };
+
+            return {
+                title: `Lights Out #${level}`,
+                instruction: `Toggle cells so all lights are turned ON. Clicking a cell toggles itself and adjacent neighbors.`,
+                hint: `Work methodically from top corners down.`,
+                type: 'lights_out',
+                render: renderLightsOut
+            };
+        }
+
+        function toggleLightsCell(idx, size, grid) {
+            const r = Math.floor(idx / size);
+            const c = idx % size;
+            const cellsToToggle = [idx];
+            if (r > 0) cellsToToggle.push((r - 1) * size + c);
+            if (r < size - 1) cellsToToggle.push((r + 1) * size + c);
+            if (c > 0) cellsToToggle.push(r * size + (c - 1));
+            if (c < size - 1) cellsToToggle.push(r * size + (c + 1));
+            cellsToToggle.forEach(i => grid[i] = !grid[i]);
+        }
+
+        function renderLightsOut() {
+            const { grid, size } = currentPuzzleState;
+            let html = `<div class="grid gap-2 mb-4" style="grid-template-columns: repeat(${size}, minmax(0, 1fr));">`;
+            grid.forEach((on, idx) => {
+                html += `<button onclick="clickLight(${idx})" class="w-14 h-14 md:w-16 md:h-16 rounded-xl transition-all duration-200 flex items-center justify-center font-bold text-lg ${on ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/50 scale-105' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                    <i class="fa-solid ${on ? 'fa-lightbulb' : 'fa-power-off'}"></i>
+                </button>`;
+            });
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+        }
+
+        function clickLight(idx) {
+            playSound('click');
+            toggleLightsCell(idx, currentPuzzleState.size, currentPuzzleState.grid);
+            renderLightsOut();
+            if (currentPuzzleState.grid.every(v => v === true)) {
+                playSound('success');
+                triggerVictory();
+            }
+        }
+
+        // --- 3. MATH SCALES (Levels 21-30) ---
+        function generateMathScale(level, sub, rnd) {
+            const valA = Math.floor(rnd * 6) + 2;
+            const valB = Math.floor(rnd * 6) + 3;
+            const target = valA * 3 + valB * 2;
+            
+            return {
+                title: `Math Balance #${level}`,
+                instruction: `Find the value of the question mark (?) so the scale balances.`,
+                hint: `Substitute known icon values into the equation.`,
+                type: 'math_scale',
+                render: () => {
+                    document.getElementById('puzzleArena').innerHTML = `
+                        <div class="text-center mb-6">
+                            <div class="text-xl font-bold text-cyan-400 mb-2">🟢 = ${valA} &nbsp;|&nbsp; 🟣 = ${valB}</div>
+                            <div class="text-3xl font-extrabold mono text-white bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                                3(🟢) + 2(🟣) = <span class="text-amber-400">?</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 w-full max-w-xs">
+                            <input type="number" id="scaleInput" placeholder="Enter answer" class="flex-1 bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-center text-white mono font-bold focus:outline-none focus:border-cyan-500">
+                            <button onclick="checkScale(${target})" class="px-6 py-3 bg-cyan-500 text-black font-bold rounded-xl hover:bg-cyan-400 transition">Submit</button>
+                        </div>
+                    `;
+                }
+            };
+        }
+
+        function checkScale(correct) {
+            const val = parseInt(document.getElementById('scaleInput').value);
+            if (val === correct) {
+                playSound('success');
+                triggerVictory();
+            } else {
+                playSound('error');
+                showFeedback("Incorrect value! Check your math.", "error");
+            }
+        }
+
+        // --- 4. NUMBER JUMP MAZE (Levels 31-40) ---
+        function generateNumberJump(level, sub, rnd) {
+            const size = 4;
+            const jumpStep = (sub % 3) + 1;
+            currentPuzzleState = { pos: 0, target: 15, size, jumpStep };
+
+            return {
+                title: `Number Jump #${level}`,
+                instruction: `Navigate from start (top-left) to finish (bottom-right) by jumping exactly <strong class="text-cyan-400">${jumpStep}</strong> steps horizontally or vertically per move.`,
+                hint: `Plan your path step-by-step to avoid getting cornered.`,
+                type: 'number_jump',
+                render: renderNumberJump
+            };
+        }
+
+        function renderNumberJump() {
+            const { pos, size, jumpStep, target } = currentPuzzleState;
+            let html = `<div class="text-sm font-semibold text-cyan-400 mb-4">Jump Rule: exactly ${jumpStep} steps</div>`;
+            html += `<div class="grid grid-cols-4 gap-2 mb-4">`;
+            for (let i = 0; i < size * size; i++) {
+                const isCurrent = i === pos;
+                const isTarget = i === target;
+                let bg = 'bg-slate-800 border-slate-700 text-slate-400';
+                if (isCurrent) bg = 'bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/50 scale-105';
+                else if (isTarget) bg = 'bg-emerald-500/20 text-emerald-400 border-emerald-500 font-bold';
+
+                html += `<button onclick="jumpCell(${i})" class="w-14 h-14 rounded-xl border flex items-center justify-center font-bold text-base transition ${bg}">${i === 0 ? 'START' : (isTarget ? 'FINISH' : i)}</button>`;
+            }
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+        }
+
+        function jumpCell(idx) {
+            const { pos, size, jumpStep, target } = currentPuzzleState;
+            const r1 = Math.floor(pos / size), c1 = pos % size;
+            const r2 = Math.floor(idx / size), c2 = idx % size;
+            const dist = Math.abs(r1 - r2) + Math.abs(c1 - c2);
+
+            if (dist === jumpStep) {
+                playSound('click');
+                currentPuzzleState.pos = idx;
+                renderNumberJump();
+                if (idx === target) {
+                    playSound('success');
+                    triggerVictory();
+                }
+            } else {
+                playSound('error');
+                showFeedback(`Must jump exactly ${jumpStep} steps (horizontal or vertical)!`, "error");
+            }
+        }
+
+        // --- 5. WORD & LATERAL LOGIC (Levels 41-50) ---
+        function generateRiddle(level, sub, rnd) {
+            const riddles = [
+                { q: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?", options: ["An Echo", "A Cloud", "A Shadow", "A Radio"], ans: "An Echo", hint: "It bounces back what you give it." },
+                { q: "What has to be broken before you can use it?", options: ["An Egg", "A Promise", "A Coconut", "A Glass"], ans: "An Egg", hint: "Breakfast item." },
+                { q: "I have keys but no locks. I have space but no room. You can enter, but can’t go outside. What am I?", options: ["A Keyboard", "A Piano", "A Spaceship", "A Map"], ans: "A Keyboard", hint: "You are probably typing or tapping on one right now." },
+                { q: "What is full of holes but still holds water?", options: ["A Sponge", "A Net", "A Bucket", "A Colander"], ans: "A Sponge", hint: "Absorbent kitchen tool." },
+                { q: "What goes up and down but never moves?", options: ["Stairs", "An Elevator", "A Thermometer", "A Kite"], ans: "Stairs", hint: "Connects floors in a building." },
+                { q: "I am light as a feather, yet the strongest person can't hold me for much longer than a minute. What am I?", options: ["Breath", "A Thought", "A Shadow", "Water"], ans: "Breath", hint: "Hold your nose to test." },
+                { q: "What gets wetter the more it dries?", options: ["A Towel", "An Ocean", "Soap", "A Sponge"], ans: "A Towel", hint: "Used after a shower." },
+                { q: "If you drop me I'm sure to crack, but give me a smile and I'll always smile back. What am I?", options: ["A Mirror", "An Egg", "Glass", "A Smile"], ans: "A Mirror", hint: "Reflects your appearance." },
+                { q: "What has one eye, but cannot see?", options: ["A Needle", "A Storm", "A Potato", "A Keyhole"], ans: "A Needle", hint: "Used in sewing." },
+                { q: "What has many teeth, but cannot bite?", options: ["A Comb", "A Zipper", "A Shark", "A Saw"], ans: "A Comb", hint: "Used for hair." }
+            ];
+
+            const r = riddles[(level - 41) % riddles.length];
+            let opts = [...r.options];
+            opts.sort(() => rnd() - 0.5);
+
+            return {
+                title: `Word Logic #${level}`,
+                instruction: r.q,
+                hint: r.hint,
+                type: 'riddle',
+                render: () => {
+                    document.getElementById('puzzleArena').innerHTML = `
+                        <div class="text-base md:text-lg font-semibold text-white mb-6 text-center max-w-lg leading-relaxed bg-slate-900/60 p-6 rounded-2xl border border-slate-700">
+                            "${r.q}"
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                            ${opts.map(opt => `<button onclick="checkRiddle('${opt.replace(/'/g, "\\'")}', '${r.ans.replace(/'/g, "\\'")}')" class="py-3.5 px-4 rounded-xl glass-panel font-bold text-slate-200 hover:bg-cyan-500/20 hover:border-cyan-500 transition text-sm">${opt}</button>`).join('')}
+                        </div>
+                    `;
+                }
+            };
+        }
+
+        function checkRiddle(selected, correct) {
+            if (selected === correct) {
+                playSound('success');
+                triggerVictory();
+            } else {
+                playSound('error');
+                showFeedback("Incorrect answer. Think laterally!", "error");
+            }
+        }
+
+        // --- 6. COLOR GRADIENT MATCH (Levels 51-60) ---
+        function generateColorMatch(level, sub, rnd) {
+            const targetR = Math.floor(rnd() * 200) + 20;
+            const targetG = Math.floor(rnd() * 200) + 20;
+            const targetB = Math.floor(rnd() * 200) + 20;
+            currentPuzzleState = { targetR, targetG, targetB };
+
+            return {
+                title: `Color Match #${level}`,
+                instruction: `Adjust the Red, Green, and Blue sliders to match the target color swatch within tolerance.`,
+                hint: `Red + Green = Yellow, Red + Blue = Magenta, Green + Blue = Cyan.`,
+                type: 'color_match',
+                render: renderColorMatch
+            };
+        }
+
+        function renderColorMatch() {
+            const { targetR, targetG, targetB } = currentPuzzleState;
+            document.getElementById('puzzleArena').innerHTML = `
+                <div class="flex items-center space-x-6 mb-6">
+                    <div class="text-center">
+                        <div class="text-xs font-semibold text-slate-400 mb-2">TARGET</div>
+                        <div class="w-20 h-20 rounded-2xl shadow-lg border border-white/20" style="background: rgb(${targetR}, ${targetG}, ${targetB})"></div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs font-semibold text-slate-400 mb-2">YOUR MIX</div>
+                        <div id="userColorBox" class="w-20 h-20 rounded-2xl shadow-lg border border-white/20" style="background: rgb(128, 128, 128)"></div>
+                    </div>
+                </div>
+                <div class="w-full max-w-sm space-y-4 mb-6">
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Red</span><span id="valR">128</span></div>
+                        <input type="range" min="0" max="255" value="128" id="rangeR" oninput="updateColor()" class="w-full accent-cyan-500">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Green</span><span id="valG">128</span></div>
+                        <input type="range" min="0" max="255" value="128" id="rangeG" oninput="updateColor()" class="w-full accent-emerald-500">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Blue</span><span id="valB">128</span></div>
+                        <input type="range" min="0" max="255" value="128" id="rangeB" oninput="updateColor()" class="w-full accent-purple-500">
+                    </div>
+                </div>
+                <button onclick="checkColor()" class="px-6 py-3 bg-cyan-500 text-black font-bold rounded-xl hover:bg-cyan-400 transition shadow-lg">Check Match</button>
+            `;
+            updateColor();
+        }
+
+        function updateColor() {
+            const r = document.getElementById('rangeR').value;
+            const g = document.getElementById('rangeG').value;
+            const b = document.getElementById('rangeB').value;
+            document.getElementById('valR').innerText = r;
+            document.getElementById('valG').innerText = g;
+            document.getElementById('valB').innerText = b;
+            document.getElementById('userColorBox').style.background = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function checkColor() {
+            const { targetR, targetG, targetB } = currentPuzzleState;
+            const r = parseInt(document.getElementById('rangeR').value);
+            const g = parseInt(document.getElementById('rangeG').value);
+            const b = parseInt(document.getElementById('rangeB').value);
+
+            const diff = Math.abs(targetR - r) + Math.abs(targetG - g) + Math.abs(targetB - b);
+            if (diff <= 30) {
+                playSound('success');
+                triggerVictory();
+            } else {
+                playSound('error');
+                showFeedback(`Not quite close enough! Difference: ${diff} (Aim for < 30)`, "error");
+            }
+        }
+
+        // --- 7. CIRCUIT PIPE CONNECT (Levels 61-70) ---
+        function generateCircuit(level, sub, rnd) {
+            const size = 3;
+            let rotations = Array(9).fill(0).map(() => Math.floor(rnd() * 4));
+            if (rotations.every(r => r === 0)) rotations[0] = 1;
+            currentPuzzleState = { rotations, size };
+
+            return {
+                title: `Circuit Pipe #${level}`,
+                instruction: `Click pipes to rotate them 90°. Connect the top-left source to the bottom-right terminal.`,
+                hint: `Align the flow markers continuously from start to finish.`,
+                type: 'circuit',
+                render: renderCircuit
+            };
+        }
+
+        function renderCircuit() {
+            const { rotations, size } = currentPuzzleState;
+            let html = `<div class="grid grid-cols-3 gap-3 mb-4">`;
+            rotations.forEach((rot, idx) => {
+                let icon = 'fa-grip-lines';
+                if (idx === 0) icon = 'fa-arrow-right-to-bracket text-cyan-400';
+                else if (idx === 8) icon = 'fa-flag-checkered text-emerald-400';
+                else if (rot % 2 === 0) icon = 'fa-grip-lines';
+                else icon = 'fa-grip-lines-vertical';
+
+                html += `<button onclick="rotatePipe(${idx})" class="w-16 h-16 rounded-xl glass-panel flex flex-col items-center justify-center text-xl hover:border-cyan-500 transition transform rotate-[${rot * 90}deg]">
+                    <i class="fa-solid ${icon}" style="transform: rotate(${rot * 90}deg)"></i>
+                    <span class="text-[9px] text-slate-500 mt-1">${rot*90}°</span>
+                </button>`;
+            });
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+        }
+
+        function rotatePipe(idx) {
+            playSound('click');
+            currentPuzzleState.rotations[idx] = (currentPuzzleState.rotations[idx] + 1) % 4;
+            renderCircuit();
+            if (currentPuzzleState.rotations.every(r => r === 0)) {
+                playSound('success');
+                triggerVictory();
+            }
+        }
+
+        // --- 8. MEMORY MATRIX (Levels 71-80) ---
+        function generateMemory(level, sub, rnd) {
+            const size = 4;
+            const count = sub + 2;
+            let pattern = [];
+            while (pattern.length < count) {
+                let idx = Math.floor(rnd() * (size * size));
+                if (!pattern.includes(idx)) pattern.push(idx);
+            }
+            currentPuzzleState = { pattern, userSelected: [], size, phase: 'memorize' };
+
+            return {
+                title: `Memory Matrix #${level}`,
+                instruction: `Memorize the glowing tiles. They will disappear shortly!`,
+                hint: `Focus on clusters or spatial shapes.`,
+                type: 'memory',
+                render: renderMemory
+            };
+        }
+
+        function renderMemory() {
+            const { pattern, userSelected, size, phase } = currentPuzzleState;
+            let html = `<div class="grid grid-cols-4 gap-2 mb-4">`;
+            for (let i = 0; i < size * size; i++) {
+                let active = phase === 'memorize' && pattern.includes(i);
+                let selected = userSelected.includes(i);
+                let bg = 'bg-slate-800 border-slate-700';
+                if (active) bg = 'bg-cyan-400 shadow-lg shadow-cyan-400/50 scale-105';
+                else if (selected) bg = 'bg-purple-500 text-white';
+
+                html += `<button onclick="clickMemory(${i})" class="w-14 h-14 rounded-xl border flex items-center justify-center transition ${bg}"></button>`;
+            }
+            html += `</div>`;
+            html += `<div id="memoryStatus" class="text-xs font-semibold text-cyan-400">${phase === 'memorize' ? 'Memorize pattern...' : 'Select the glowing tiles!'}</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+
+            if (phase === 'memorize') {
+                setTimeout(() => {
+                    currentPuzzleState.phase = 'recall';
+                    renderMemory();
+                }, 2000);
+            }
+        }
+
+        function clickMemory(idx) {
+            if (currentPuzzleState.phase !== 'recall') return;
+            playSound('click');
+            if (!currentPuzzleState.userSelected.includes(idx)) {
+                currentPuzzleState.userSelected.push(idx);
+            }
+            renderMemory();
+
+            if (currentPuzzleState.userSelected.length === currentPuzzleState.pattern.length) {
+                const correct = currentPuzzleState.pattern.every(p => currentPuzzleState.userSelected.includes(p));
+                if (correct) {
+                    playSound('success');
+                    triggerVictory();
+                } else {
+                    playSound('error');
+                    showFeedback("Incorrect memory recall! Try again.", "error");
+                    setTimeout(() => {
+                        currentPuzzleState.userSelected = [];
+                        currentPuzzleState.phase = 'memorize';
+                        renderMemory();
+                    }, 1000);
+                }
+            }
+        }
+
+        // --- 9. SLIDING TILE PUZZLE (Levels 81-90) ---
+        function generateSliding(level, sub, rnd) {
+            let tiles = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            for (let i = 0; i < 20; i++) {
+                let emptyIdx = tiles.indexOf(0);
+                let neighbors = [];
+                let r = Math.floor(emptyIdx / 3), c = emptyIdx % 3;
+                if (r > 0) neighbors.push(emptyIdx - 3);
+                if (r < 2) neighbors.push(emptyIdx + 3);
+                if (c > 0) neighbors.push(emptyIdx - 1);
+                if (c < 2) neighbors.push(emptyIdx + 1);
+                let randNeighbor = neighbors[Math.floor(rnd() * neighbors.length)];
+                tiles[emptyIdx] = tiles[randNeighbor];
+                tiles[randNeighbor] = 0;
+            }
+            currentPuzzleState = { tiles };
+
+            return {
+                title: `Tile Slider #${level}`,
+                instruction: `Click tiles adjacent to the empty space to slide them into sequential order (1 to 8).`,
+                hint: `Solve top row first, then bottom-left corners.`,
+                type: 'sliding',
+                render: renderSliding
+            };
+        }
+
+        function renderSliding() {
+            const { tiles } = currentPuzzleState;
+            let html = `<div class="grid grid-cols-3 gap-2 mb-4">`;
+            tiles.forEach((t, idx) => {
+                if (t === 0) {
+                    html += `<div class="w-16 h-16 rounded-xl bg-slate-900/40 border border-slate-800"></div>`;
+                } else {
+                    html += `<button onclick="slideTile(${idx})" class="w-16 h-16 rounded-xl glass-panel font-bold text-xl text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500 transition active:scale-95 shadow-md">${t}</button>`;
+                }
+            });
+            html += `</div>`;
+            document.getElementById('puzzleArena').innerHTML = html;
+        }
+
+        function slideTile(idx) {
+            const { tiles } = currentPuzzleState;
+            const emptyIdx = tiles.indexOf(0);
+            const r1 = Math.floor(idx / 3), c1 = idx % 3;
+            const r2 = Math.floor(emptyIdx / 3), c2 = emptyIdx % 3;
+            const dist = Math.abs(r1 - r2) + Math.abs(c1 - c2);
+
+            if (dist === 1) {
+                playSound('click');
+                tiles[emptyIdx] = tiles[idx];
+                tiles[idx] = 0;
+                renderSliding();
+
+                const solved = tiles.every((t, i) => i === 8 ? t === 0 : t === i + 1);
+                if (solved) {
+                    playSound('success');
+                    triggerVictory();
+                }
+            } else {
+                playSound('error');
+            }
+        }
+
+        // --- 10. MASTERMIND CODE CRACKING (Levels 91-100) ---
+        function generateMastermind(level, sub, rnd) {
+            const codeLen = 3;
+            let secret = [];
+            for (let i = 0; i < codeLen; i++) {
+                secret.push(Math.floor(rnd() * 5) + 1);
+            }
+            currentPuzzleState = { secret, currentGuess: [1, 1, 1], attempts: 5, history: [] };
+
+            return {
+                title: `Mastermind Code #${level}`,
+                instruction: `Crack the 3-digit secret code (Digits 1–5).`,
+                hint: `Test systematic combinations like 1-2-3 first to find matching numbers.`,
+                type: 'mastermind',
+                render: renderMastermind
+            };
+        }
+
+        function renderMastermind() {
+            const { currentGuess, attempts, history } = currentPuzzleState;
+            
+            let historyHtml = '';
+            if (history.length > 0) {
+                historyHtml = `<div class="w-full max-w-sm mb-4 space-y-2 max-h-40 overflow-y-auto pr-1">
+                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Previous Guesses:</div>
+                    ${history.map(h => `
+                        <div class="flex items-center justify-between bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-800 text-xs">
+                            <div class="flex space-x-2 font-mono font-bold text-white">
+                                ${h.guess.map(n => `<span class="w-6 h-6 rounded bg-slate-800 flex items-center justify-center">${n}</span>`).join('')}
+                            </div>
+                            <div class="flex space-x-3 font-bold">
+                                <span class="text-emerald-400" title="Correct digit & exact spot">🟢 Number: ${h.bulls}</span>
+                                <span class="text-amber-400" title="Correct digit, wrong spot">🟡 Position: ${h.cows}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            }
+
+            document.getElementById('puzzleArena').innerHTML = `
+                <div class="w-full flex flex-col items-center">
+                    <div class="flex items-center space-x-3 bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-800 text-xs text-slate-300 mb-4 text-center">
+                        <span><strong class="text-emerald-400">🟢 Number</strong> = Correct digit & spot</span>
+                        <span>•</span>
+                        <span><strong class="text-amber-400">🟡 Position</strong> = Correct digit, wrong spot</span>
+                    </div>
+
+                    ${historyHtml}
+
+                    <div class="text-xs font-semibold text-slate-400 mb-2">Attempts Remaining: ${attempts}</div>
+                    
+                    <div class="flex space-x-3 mb-6">
+                        ${currentGuess.map((g, i) => `
+                            <div class="flex flex-col items-center">
+                                <button onclick="changeGuessDigit(${i}, 1)" class="w-12 h-10 rounded-t-xl glass-panel text-cyan-400 hover:bg-cyan-500/20"><i class="fa-solid fa-chevron-up"></i></button>
+                                <div class="w-12 h-14 bg-slate-900 border-x border-slate-700 flex items-center justify-center font-bold text-2xl mono text-white">${g}</div>
+                                <button onclick="changeGuessDigit(${i}, -1)" class="w-12 h-10 rounded-b-xl glass-panel text-cyan-400 hover:bg-cyan-500/20"><i class="fa-solid fa-chevron-down"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button onclick="submitGuess()" class="px-6 py-3 bg-cyan-500 text-black font-bold rounded-xl hover:bg-cyan-400 transition shadow-lg">Submit Code</button>
+                </div>
+            `;
+        }
+
+        function changeGuessDigit(idx, delta) {
+            playSound('click');
+            let val = currentPuzzleState.currentGuess[idx] + delta;
+            if (val > 5) val = 1;
+            if (val < 1) val = 5;
+            currentPuzzleState.currentGuess[idx] = val;
+            renderMastermind();
+        }
+
+        function submitGuess() {
+            const { secret, currentGuess } = currentPuzzleState;
+            let bulls = 0, cows = 0;
+            let sCopy = [...secret];
+            let gCopy = [...currentGuess];
+
+            for (let i = 0; i < 3; i++) {
+                if (gCopy[i] === sCopy[i]) {
+                    bulls++;
+                    sCopy[i] = null;
+                    gCopy[i] = null;
+                }
+            }
+            for (let i = 0; i < 3; i++) {
+                if (gCopy[i] !== null) {
+                    let idx = sCopy.indexOf(gCopy[i]);
+                    if (idx !== -1) {
+                        cows++;
+                        sCopy[idx] = null;
+                    }
+                }
+            }
+
+            // Save to history list
+            currentPuzzleState.history.unshift({ guess: [...currentGuess], bulls, cows });
+
+            if (bulls === 3) {
+                playSound('success');
+                triggerVictory();
+            } else {
+                playSound('error');
+                currentPuzzleState.attempts--;
+                renderMastermind();
+                if (currentPuzzleState.attempts <= 0) {
+                    showFeedback("Out of attempts! Resetting puzzle...", "error");
+                    setTimeout(() => loadLevel(currentLevel), 1500);
+                }
+            }
+        }
+
+        // --- NAVIGATION & UI FLOW ---
+        function renderLevelGrid() {
+            let html = '';
+            let completed = 0;
+            let stars = 0;
+
+            for (let i = 1; i <= 100; i++) {
+                const isUnlocked = i <= unlockedLevel;
+                const isCompleted = levelData[i]?.completed;
+                if (isCompleted) {
+                    completed++;
+                    stars += levelData[i].stars || 1;
+                }
+
+                let btnClass = 'glass-panel text-slate-500 border-slate-800 cursor-not-allowed';
+                if (isUnlocked) {
+                    btnClass = isCompleted 
+                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 font-bold hover:bg-emerald-500/30' 
+                        : 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300 font-bold hover:bg-cyan-500/20';
+                }
+
+                html += `<button onclick="selectLevel(${i})" ${!isUnlocked ? 'disabled' : ''} class="h-11 rounded-xl border flex flex-col items-center justify-center transition active:scale-95 ${btnClass}">
+                    <span class="text-xs">${i}</span>
+                    ${isCompleted ? '<i class="fa-solid fa-star text-[9px] text-amber-400"></i>' : ''}
+                </button>`;
+            }
+
+            document.getElementById('levelGrid').innerHTML = html;
+            document.getElementById('completedCount').innerText = completed;
+            document.getElementById('totalStars').innerText = stars;
+        }
+
+        function openMenu() {
+            playSound('click');
+            renderLevelGrid();
+            document.getElementById('menuView').classList.remove('hidden');
+            document.getElementById('gameView').classList.add('hidden');
+        }
+
+        function goToMenu() {
+            openMenu();
+        }
+
+        function resumeGame() {
+            playSound('click');
+            loadLevel(unlockedLevel <= 100 ? unlockedLevel : 100);
+        }
+
+        function selectLevel(lvl) {
+            playSound('click');
+            loadLevel(lvl);
+        }
+
+        function loadLevel(lvl) {
+            currentLevel = lvl;
+            document.getElementById('menuView').classList.add('hidden');
+            document.getElementById('gameView').classList.remove('hidden');
+
+            document.getElementById('levelTitleDisplay').innerText = `Level ${lvl}`;
+            document.getElementById('levelCategoryTag').innerText = getCategoryName(lvl);
+
+            document.getElementById('prevBtn').disabled = lvl <= 1;
+            document.getElementById('nextBtn').disabled = lvl >= unlockedLevel;
+
+            const puzzle = generatePuzzle(lvl);
+            currentPuzzleState._puzzleDef = puzzle;
+            
+            if (puzzle.render) {
+                puzzle.render();
+            } else if (puzzle.displayHtml) {
+                document.getElementById('puzzleArena').innerHTML = puzzle.displayHtml;
+            }
+            document.getElementById('puzzleStatus').innerText = puzzle.instruction;
+        }
+
+        function restartCurrentLevel() {
+            playSound('click');
+            loadLevel(currentLevel);
+        }
+
+        function prevLevel() {
+            if (currentLevel > 1) loadLevel(currentLevel - 1);
+        }
+
+        function nextLevel() {
+            if (currentLevel < unlockedLevel) loadLevel(currentLevel + 1);
+        }
+
+        function skipLevel() {
+            playSound('click');
+            if (!levelData[currentLevel]) {
+                levelData[currentLevel] = { completed: true, stars: 0 };
+            }
+            if (currentLevel >= unlockedLevel && unlockedLevel < 100) {
+                unlockedLevel = currentLevel + 1;
+            }
+            saveProgress();
+
+            if (currentLevel < 100) {
+                loadLevel(currentLevel + 1);
+            } else {
+                openMenu();
+            }
+        }
+
+        function jumpToCategory(catIndex) {
+            playSound('click');
+            loadLevel(catIndex * 10 + 1);
+        }
+
+        function showHint() {
+            playSound('click');
+            const puzzle = currentPuzzleState._puzzleDef;
+            document.getElementById('hintText').innerText = puzzle?.hint || "Think outside the box!";
+            document.getElementById('hintModal').classList.remove('hidden');
+        }
+
+        function closeHint() {
+            playSound('click');
+            document.getElementById('hintModal').classList.add('hidden');
+        }
+
+        function showFeedback(msg, type) {
+            const status = document.getElementById('puzzleStatus');
+            status.innerText = msg;
+            status.className = `text-xs font-semibold ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}`;
+            setTimeout(() => {
+                if (currentPuzzleState && currentPuzzleState._puzzleDef) {
+                    status.innerText = currentPuzzleState._puzzleDef.instruction;
+                    status.className = 'text-xs font-medium text-slate-400';
+                }
+            }, 2500);
+        }
+
+        function triggerVictory() {
+            levelData[currentLevel] = { completed: true, stars: 1 };
+            if (currentLevel >= unlockedLevel && unlockedLevel < 100) {
+                unlockedLevel = currentLevel + 1;
+            }
+            saveProgress();
+
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            document.getElementById('victoryModal').classList.remove('hidden');
+        }
+
+        function closeVictoryAndMenu() {
+            document.getElementById('victoryModal').classList.add('hidden');
+            openMenu();
+        }
+
+        function advanceToNextLevel() {
+            document.getElementById('victoryModal').classList.add('hidden');
+            if (currentLevel < 100) {
+                loadLevel(currentLevel + 1);
+            } else {
+                openMenu();
+            }
+        }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset all progress?")) {
+                localStorage.removeItem('synapse100_progress');
+                unlockedLevel = 1;
+                levelData = {};
+                renderLevelGrid();
+                playSound('click');
+            }
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            loadProgress();
+            renderLevelGrid();
+        };
+    </script>
+</body>
+</html>
